@@ -541,8 +541,189 @@
 						<atom test="new" http="POST" new_field_response="">
 					-->
 				</clone>
-			</xsl:when>	
-			<!--<xsl:when test="self::ALBARÁN_CLIENTE">				
+                       </xsl:when>
+                       <xsl:when test="self::PEDIDO_TRASPASO_DE_ALMACENES">
+                               <clone>
+                                       <![CDATA[
+                                                                                                select distinct
+                                                    case
+                                                        when rdoc.rdn is null then 'new'
+                                                        when rdoc.rdn is not null and rlin.identificador_replicas is null
+                                                            and rvar.identificador_replicas is not null then 'newlin'
+                                                        when rdoc.rdn is not null and rlin.identificador_replicas is not null
+                                                            and rvar.identificador_replicas is not null then 'setlin'
+                                                        else 'NA'
+                                                    end as test,
+
+                                                    endpoint."página_web" as urldest,
+
+                                                    rempresa.identificador_replicas as ridempresa,
+                                                    to_timestamp(doc.fecha)::timestamp as fecha,
+                                                    rtar.identificador_replicas as ridtarifacli,
+
+                                                    rcli.identificador_replicas as idrcliente,
+
+                                                    rdoc.identificador_replicas as rpedid,
+
+                                                    c.nombre as clinombre,
+                                                    c."tableId" as clitid,
+                                                    round(doc.base::numeric,3) as base,
+                                                    round(doc.importe::numeric,3) as importe,
+                                                    round(doc.total_iva::numeric,3) as total_iva,
+                                                    doc.cantidad_total,
+                                                    doc."tableId" as tid_tick,
+                                                    rmon.identificador_replicas as idrmon,
+                                                    ralm.identificador_replicas as ridwareh,
+                                                    ragente.identificador_replicas as idragente,
+                                                    endpoint.rdn as endpointdest,
+                                                    lin."tableId" as tidlin,
+                                                    rlin.identificador_replicas as rlinid,
+                                                    lin.cantidad,
+                                                    s.stock_disponible,
+                                                    lin.precio,
+                                                    (lin.importe_con_iva - lin.importe) as lineaiva,
+                                                    lin.descuento,
+
+                                                    riva.identificador_replicas as ridtax,
+                                                    rvar.identificador_replicas as rvarianteid,
+                                                    g.rdn as sku,
+
+                                                    array_agg(
+                                                        '{'||rp.identificador_replicas||','||gconfig."descripción"||','||lin.cantidad||','||lin.precio||','||
+                                                        lin.precio_iva_incluido||','||ralm.identificador_replicas||'}'
+                                                    ) OVER (PARTITION BY doc.rdn) as linea
+                                                from
+                                                    pedido_de_cliente as doc
+                                                    inner join mi_empresa as emp
+                                                        on emp."tableId" = doc."mi_empresa"
+                                                    inner join "cliente_particular" as c
+                                                        on "clienteCLIENTE_PARTICULAR" = c."tableId"
+                                                    inner join replica_ids as ralm
+                                                        on ralm.clases = 'ALMACÉN'
+                                                        and ralm.destinatario = '$ENDPOINT$'
+                                                        and ralm."id_ERP" = doc.origen::text
+                                                    inner join replica_ids as rempresa
+                                                        on rempresa.destinatario = '$ENDPOINT$'
+                                                        and rempresa.clases = 'MI_EMPRESA'
+                                                        and rempresa."id_ERP" = emp."tableId"::text
+                                                    inner join replica_ids as rcli
+                                                        on rcli.destinatario = '$ENDPOINT$'
+                                                        and rcli.clases = 'CLIENTE_PARTICULAR'
+                                                        and rcli."id_ERP"::int = c."tableId"
+                                                    inner join "línea_materia" as lin
+                                                        on lin."pedido_de_clienteId" = doc."tableId"
+                                                    inner join "género" as g
+                                                        on g."tableId" = producto
+                                                    inner join "género" as gconfig
+                                                        on gconfig.rdn = substring(g.rdn,1,5)
+                                                    inner join stock as s
+                                                        on s.producto = g."tableId"
+                                                        and doc.origen = "almacén_stock"
+                                                    left join replica_ids as rp
+                                                        on rp.destinatario = '$ENDPOINT$'
+                                                        and rp.clases = 'GÉNERO'
+                                                        and rp."id_ERP" = gconfig.rdn
+                                                    left join replica_ids as rvar
+                                                        on rvar.clases = 'VARIANTE'
+                                                        and rvar.destinatario = '$ENDPOINT$'
+                                                        and rvar."id_ERP" = g.rdn
+                                                    left join replica_ids as rlin
+                                                        on rlin.clases = 'LÍNEA_MATERIA'
+                                                        and rlin.destinatario = '$ENDPOINT$'
+                                                        and rlin."id_ERP"::int = lin."tableId"
+                                                    left join replica_ids as riva
+                                                        on riva.destinatario = '$ENDPOINT$'
+                                                        and riva.clases = 'TIPO_IVA'
+                                                        and riva."id_ERP" = lin.iva::text
+                                                    left join distribuidor as dis
+                                                        on dis."tableId" = doc."agente_comercialDISTRIBUIDOR"
+                                                    left join replica_ids as ragente
+                                                        on ragente."id_ERP" = dis."tableId"::text
+                                                        and ragente.clases = 'AGENTE'
+                                                        and ragente.destinatario = '$ENDPOINT$'
+                                                    left join replica_ids as rdoc
+                                                        on rdoc.clases = 'PEDIDO_TRASPASO_DE_ALMACENES'
+                                                        and doc."tableId" = rdoc."id_ERP"::int
+                                                        and rdoc.destinatario = '$ENDPOINT$'
+                                                    left join replica_ids as rmon
+                                                        on rmon.destinatario = '$ENDPOINT$'
+                                                        and rmon.clases = 'MONEDA'
+                                                    left join (
+                                                        tarifa_precio as tar
+                                                        inner join replica_ids as rtar
+                                                            on rtar.destinatario = '$ENDPOINT$'
+                                                            and rtar.clases = 'TARIFA_PRECIO'
+                                                            and rtar."id_ERP" = tar."tableId"::text
+                                                    ) on tar."tableId" = c.tarifa_precio,
+                                                    "delegación" as endpoint
+
+                                                where doc.base is not null
+                                                    and doc."tableId" =]]><xsl:value-of select="attribute::tableId" /><![CDATA[ and
+                                                     ('$ENDPOINT$'='*' or endpoint.rdn='$ENDPOINT$')
+
+                                                order by endpoint.rdn
+                                       ]]>
+
+                                       <atom test="new" http="POST" new_field_response="">
+                                               <xsl:copy-of select="@*[name(.)='action' or name(.)='rdn' or name(.)='tableId']"/>
+                                               <xsl:attribute name="groupby"><xsl:value-of select="attribute::rdn" /></xsl:attribute>
+                                               <xsl:attribute name="slug"><xsl:value-of select="attribute::rdn" /></xsl:attribute>
+                                               <xsl:attribute name="endpoint">{$endpointdest}</xsl:attribute>
+                                               <xsl:attribute name="url">{$urldest}</xsl:attribute>
+                                               <xsl:attribute name="class"><xsl:value-of select="name(.)" /></xsl:attribute>
+                                               <xsl:attribute name="path">xmlrpc/2/object</xsl:attribute>
+
+                                               <xsl:attribute name="method">execute_kw</xsl:attribute>
+                                               <list>
+                                                       <par>db</par>
+                                                       <par>uid</par>
+                                                       <par>pwd</par>
+                                                       <par>sale.order</par>
+                                                       <par>create</par>
+                                                       <list>
+                                                               <dict>
+                                                                       <picking_policy>direct</picking_policy>
+                                                                       <name>text:<xsl:value-of select="attribute::rdn" /></name>
+                                                                       <company_id>{$ridempresa}</company_id>
+                                                                       <date_order>{$fecha}</date_order>
+                                                                       <partner_id>{$idrcliente}</partner_id>
+                                                                       <warehouse_id>{$ridwareh}</warehouse_id>
+                                                                       <state>sale</state><!-- sin precios ni impuestos -->
+                                                               </dict>
+                                                       </list>
+                                               </list>
+                                       </atom>
+                                       <atom test="newlin" http="POST" new_field_response="">
+                                               <xsl:copy-of select="@*[name(.)='action' or name(.)='rdn']"/>
+                                               <xsl:attribute name="groupby">{$sku}</xsl:attribute>
+                                               <xsl:attribute name="tableId">{$tidlin}</xsl:attribute>
+                                               <xsl:attribute name="slug">{$sku}</xsl:attribute>
+                                               <xsl:attribute name="endpoint">{$endpointdest}</xsl:attribute>
+                                               <xsl:attribute name="url">{$urldest}</xsl:attribute>
+                                               <xsl:attribute name="class">LÍNEA_MATERIA</xsl:attribute>
+                                               <xsl:attribute name="path">xmlrpc/2/object</xsl:attribute>
+
+                                               <xsl:attribute name="method">execute_kw</xsl:attribute>
+                                               <list>
+                                                       <par>db</par>
+                                                       <par>uid</par>
+                                                       <par>pwd</par>
+                                                       <par>sale.order.line</par>
+                                                       <par>create</par>
+                                                       <list>
+                                                               <dict>
+                                                                       <product_uom_qty>{$cantidad}</product_uom_qty>
+                                                                       <order_id>{$rpedid}</order_id>
+                                                                       <price_unit>0</price_unit>
+                                                                       <product_id>{$rvarianteid}</product_id>
+                                                                       <customer_lead></customer_lead>
+                                                               </dict>
+                                                       </list>
+                                               </list>
+                                       </atom>
+                               </clone>
+                       </xsl:when>
+                       <!--<xsl:when test="self::ALBARÁN_CLIENTE">
 				<clone>
 					<![CDATA[
 						select distinct
