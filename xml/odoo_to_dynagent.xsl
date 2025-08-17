@@ -157,6 +157,10 @@
 							SELECT
 							case when rdoc.identificador_replicas is null then 'new' 
 								 else 'set' end as test,
+							case when dis.rdn is null then 'pedido' 
+								 else 'traspaso' end as test2,
+								 
+							case when dis.rdn is nul then 'PEDIDO_DE_CLIENTE' else 'PEDIDO_TRASPASO_ALMACENES' end as clase,
 							del.rdn as del_rdn,
 							c.rdn as rdncliente,
 							case when a.rdn is null then 'WEB' else a.rdn end as rdnagente,
