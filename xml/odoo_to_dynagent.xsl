@@ -4,6 +4,7 @@
 	<xsl:template match="/">
 		<xsl:variable name="inputclass" ><xsl:value-of select="XMLRPC/attribute::clase" /></xsl:variable> 	
 		<xsl:variable name="miempresa" >006</xsl:variable> 
+		<xsl:variable name="central" >001</xsl:variable> 
 		<datos plaindata="true" input="xmlrpc" idconvert="true"><!-- siempre mismo msguid, sera ignorado si vuelve a preguntar  -->	
 			<xsl:choose>
 				<xsl:when test="exists(XMLRPC/MAP/id)">
@@ -201,9 +202,9 @@
 									
 									
 						]]>
-                                               <xsl:variable name="rdntick"><xsl:value-of select="XMLRPC/MAP/name"/></xsl:variable>
-                                               <whenc test="pedido">
-                                               <PEDIDO_DE_CLIENTE  test="set" action="set" >
+                    <xsl:variable name="rdntick"><xsl:value-of select="XMLRPC/MAP/name"/></xsl:variable>
+                    <whenc test="pedido">
+                        <PEDIDO_DE_CLIENTE  test="set" action="set" >
 							<xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
 							<xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>
 						</PEDIDO_DE_CLIENTE>										
@@ -242,10 +243,10 @@
 									<xsl:attribute name="property">localidad</xsl:attribute>						
 									<xsl:attribute name="rdn">{$localidad}</xsl:attribute>									
 								</LOCALIDAD>
-                                                       </DIRECCIÓN>
-                                               </PEDIDO_DE_CLIENTE>
+                            </DIRECCIÓN>
+                        </PEDIDO_DE_CLIENTE>
 
-                                               <REPLICA_IDS action="createINE" destination="0">
+                        <REPLICA_IDS action="createINE" destination="0">
 							<xsl:attribute name="clases">PEDIDO_DE_CLIENTE</xsl:attribute>							
 							<xsl:attribute name="identificador_replicas"><xsl:value-of select="XMLRPC/MAP/id" /></xsl:attribute>
 							<xsl:attribute name="rdn">
@@ -256,59 +257,48 @@
 							<PEDIDO_DE_CLIENTE property="DATAPROP:id_ERP" action="set">
 								<xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
 							</PEDIDO_DE_CLIENTE>							
-                                               </REPLICA_IDS>
-                                               </whenc>
-                                               <whenc test="traspaso">
-                                                       <PEDIDO_TRASPASO_ALMACENES test="set" action="set">
-                                                               <xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
-                                                               <xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>
-                                                       </PEDIDO_TRASPASO_ALMACENES>
-                                                       <PEDIDO_TRASPASO_ALMACENES test="new" action="new" factor_descuento_global="0">
-                                                               <xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
-                                                               <xsl:attribute name="fecha"><xsl:value-of select="XMLRPC/MAP/date_order" /></xsl:attribute>
-                                                               <xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>
+                         </REPLICA_IDS>
+                    </whenc>
+					<whenc test="traspaso">
+					    <PEDIDO_TRASPASO_ALMACENES test="set" action="set">
+							 <xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
+							<xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>
+					    </PEDIDO_TRASPASO_ALMACENES>
+					    <PEDIDO_TRASPASO_ALMACENES test="new" action="new" factor_descuento_global="0">
+							<xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
+							<xsl:attribute name="fecha"><xsl:value-of select="XMLRPC/MAP/date_order" /></xsl:attribute>
+							<xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>
 
-                                                               <AGENTE_COMERCIAL_EXTERNO action="createINE" property="agente_comercial">
-                                                                       <xsl:attribute name="rdn">{$rdnagente}</xsl:attribute>
-                                                               </AGENTE_COMERCIAL_EXTERNO>
-                                                               <CLIENTE_PARTICULAR action="set" property="cliente">
-                                                                       <xsl:attribute name="rdn">{$rdncliente}</xsl:attribute>
-                                                               </CLIENTE_PARTICULAR>
-                                                               <DELEGACIÓN property="delegación" action="set" >
-                                                                       <xsl:attribute name="rdn">{$del_rdn}</xsl:attribute>
-                                                               </DELEGACIÓN>
-                                                               <ALMACÉN property="origen" action="set" >
-                                                                       <xsl:attribute name="rdn">{$del_rdn}</xsl:attribute>
-                                                               </ALMACÉN>
-                                                               <MI_EMPRESA property="mi_empresa" action="set" >
-                                                                       <xsl:attribute name="rdn"><xsl:value-of select="$miempresa" /></xsl:attribute>
-                                                               </MI_EMPRESA>
-                                                               <DIRECCIÓN action="createINE" property="dirección_envío"  destination="0">
-                                                                       <xsl:attribute name="rdn"><xsl:value-of select="concat($rdntick,'#PEDIDOCLIENTE')" /></xsl:attribute>
-                                                                       <xsl:attribute name="dirección">{$direcc}</xsl:attribute>
-                                                                       <xsl:attribute name="código_postal">{$postalcode}</xsl:attribute>
-                                                                       <LOCALIDAD>
-                                                                               <xsl:attribute name="action">createINE</xsl:attribute>
-                                                                               <xsl:attribute name="property">localidad</xsl:attribute>
-                                                                               <xsl:attribute name="rdn">{$localidad}</xsl:attribute>
-                                                                       </LOCALIDAD>
-                                                               </DIRECCIÓN>
-                                                       </PEDIDO_TRASPASO_ALMACENES>
+							<DELEGACIÓN property="delegación" action="set">
+								<xsl:attribute name="rdn"><xsl:value-of select="$central" /></xsl:attribute>
+							</DELEGACIÓN>
+							<ALMACÉN property="origen" action="set">
+								<xsl:attribute name="rdn"><xsl:value-of select="$central" /></xsl:attribute>							
+							</ALMACÉN>
+							
+							<ALMACÉN property="destino" action="set" >
+									<xsl:attribute name="rdn">{$del_rdn}</xsl:attribute>
+							</ALMACÉN>							
+							<MI_EMPRESA property="mi_empresa" action="set" >
+									<xsl:attribute name="rdn"><xsl:value-of select="$miempresa" /></xsl:attribute>
+							</MI_EMPRESA>
 
-                                                       <REPLICA_IDS action="createINE" destination="0">
-                                                               <xsl:attribute name="clases">PEDIDO_TRASPASO_ALMACENES</xsl:attribute>
-                                                               <xsl:attribute name="identificador_replicas"><xsl:value-of select="XMLRPC/MAP/id" /></xsl:attribute>
-                                                               <xsl:attribute name="rdn">
-                                                                       <xsl:value-of select="$source" />#PEDIDO_TRASPASO_ALMACENES#<xsl:value-of select="XMLRPC/MAP/id" />
-                                                               </xsl:attribute>
-                                                               <xsl:attribute name="destinatario"><xsl:value-of select="$source" /></xsl:attribute>
-                                                               <xsl:attribute name="nombre"><xsl:value-of select="XMLRPC/MAP/name" /></xsl:attribute>
-                                                               <PEDIDO_TRASPASO_ALMACENES property="DATAPROP:id_ERP" action="set">
-                                                                       <xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
-                                                               </PEDIDO_TRASPASO_ALMACENES>
-                                                       </REPLICA_IDS>
-                                               </whenc>
-					</clone>
+					   </PEDIDO_TRASPASO_ALMACENES>
+
+					   <REPLICA_IDS action="createINE" destination="0">
+							<xsl:attribute name="clases">PEDIDO_TRASPASO_ALMACENES</xsl:attribute>
+							<xsl:attribute name="identificador_replicas"><xsl:value-of select="XMLRPC/MAP/id" /></xsl:attribute>
+							<xsl:attribute name="rdn">
+									<xsl:value-of select="$source" />#PEDIDO_TRASPASO_ALMACENES#<xsl:value-of select="XMLRPC/MAP/id" />
+							</xsl:attribute>
+							<xsl:attribute name="destinatario"><xsl:value-of select="$source" /></xsl:attribute>
+							<xsl:attribute name="nombre"><xsl:value-of select="XMLRPC/MAP/name" /></xsl:attribute>
+							<PEDIDO_TRASPASO_ALMACENES property="DATAPROP:id_ERP" action="set">
+									<xsl:attribute name="rdn"><xsl:value-of select="$rdntick" /></xsl:attribute>
+							</PEDIDO_TRASPASO_ALMACENES>
+					   </REPLICA_IDS>
+				</whenc>
+				</clone>
 				</xsl:if>	
 				<xsl:if test="$inputclass='LÍNEA_ARTÍCULOS'">		
 					<xsl:variable name="idproducto"><xsl:value-of select="XMLRPC/MAP/product_id/ITEM[matches(.,'^\d+$')]" /></xsl:variable>
@@ -320,10 +310,11 @@
 							case when doc.rdn is null then 'saltar'
 								 when rlin.identificador_replicas is null then 'new' 
 								 else 'set' end as test,											 
-							
+							case when dis.rdn is null then 'pedido' 
+								 else 'traspaso' end as test2,
 							doc.rdn as docrdn,
+							doc.clase,
 							g."rdn" as prodrdn,
-							d.rdn as deleg_rdn,
 							g.pvp_promocion as pvppromo,
 							g.pvp_iva_incluido_promocion as pvppromoii,
 							g.rdn as clave_producto,
@@ -331,9 +322,13 @@
 							FROM																												
 												
 							replica_ids as rdoc																												left join
-							pedido_de_cliente as doc on doc."tableId"=rdoc."id_ERP"::int 																	left join
-														
-							"delegación" as d 	on 		d."tableId"=doc."delegación"																		left join
+							(
+									select "tableId" as id,'PEDIDO_DE_CLIENTE'    as clase from pedido_de_cliente        
+									union 
+									select "tableId" ,'PEDIDO_TRASPASO_ALMACENES' as clase from pedido_traspaso_almacenes 
+							) as doc
+							     on  doc.id=rdoc."id_ERP"::int and															
+								 rdoc.clases=doc.clase																										left join
 							
 							("línea_artículos_materia" as lin 	inner join 
 							replica_ids as rlin on 		lin."tableId"=rlin."id_ERP"::int and
@@ -375,7 +370,7 @@
 						<xsl:variable name="tipolinea">LÍNEA_ARTÍCULOS_MATERIA</xsl:variable>
 						
 						<xsl:variable name="tipoproducto">GÉNERO</xsl:variable>
-						
+						<xsl:variable name="deleg_rdn"><xsl:value-of select="$origen" /></xsl:variable>
 						
 						<xsl:variable name="rdnlin">ODOO<xsl:value-of select="$endpoint"/>#<xsl:value-of select="XMLRPC/MAP/id" /></xsl:variable>
 						
@@ -387,8 +382,8 @@
 							</xsl:element>
 						</whenc>
 						
-						<whenc test="new">
-							<xsl:element name="{$tipolinea}">								
+						<whenc test="new" test2="pedido">
+							<LÍNEA_ARTÍCULOS_MATERIA>								
 								<xsl:attribute name="action">new</xsl:attribute>						
 								<xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>						
 								<xsl:attribute name="fecha"><xsl:value-of select="XMLRPC/MAP/create_date" /></xsl:attribute>
@@ -417,34 +412,65 @@
 								<PEDIDO_DE_CLIENTE action="set" property="línea">
 									<xsl:attribute name="rdn">{$docrdn}</xsl:attribute>
 								</PEDIDO_DE_CLIENTE>				
-							</xsl:element>
-							
-							<STOCK action="createINE">
-								<xsl:attribute name="destination">{$deleg_rdn}</xsl:attribute>									
-								<xsl:attribute name="stock_reservado">
-									<xsl:value-of select="concat('+',+1*number(XMLRPC/MAP/product_uom_qty))"/>								
-								</xsl:attribute>
-								<xsl:attribute name="stock_disponible">
-									<xsl:value-of select="concat('+',-1*number(XMLRPC/MAP/product_uom_qty))"/>
-								</xsl:attribute>
-								
-								<xsl:attribute name="rdn">{$deleg_rdn}#{$clave_producto}</xsl:attribute>			
-								
-								<xsl:attribute name="clave_producto">{$clave_producto}</xsl:attribute>	
-								
-								<xsl:attribute name="fecha_modificación">
-									<xsl:value-of select="XMLRPC/MAP/create_date"/>
-								</xsl:attribute>
-								
-								<GÉNERO property="producto" action="createINE">
-									<xsl:attribute name="rdn">{$prodrdn}</xsl:attribute>
-								</GÉNERO>
-							
-								<ALMACÉN property="almacén_stock" action="set">				
-									<xsl:attribute name="rdn">{$deleg_rdn}</xsl:attribute>
-								</ALMACÉN>
-							</STOCK>
-							
+							</LÍNEA_ARTÍCULOS_MATERIA>
+
+							<xsl:call-template name="stock">
+								<xsl:with-param name="central">							
+									<xsl:value-of select="$deleg_central" />
+								</xsl:with-param>
+								<xsl:with-param name="signoreserva" select = "'1'" />
+								<xsl:with-param name="cantidad">
+									<xsl:value-of select="XMLRPC/MAP/product_uom_qty" />
+								</xsl:with-param>
+								<xsl:with-param name="product_reference">{$prodrdn}</xsl:with-param>								
+							</xsl:call-template>
+						</whenc>
+						<whenc test="new" test2="traspaso">
+							<LÍNEA_MATERIA>								
+								<xsl:attribute name="action">new</xsl:attribute>						
+								<xsl:attribute name="destination"><xsl:value-of select="$source" /></xsl:attribute>						
+								<xsl:attribute name="fecha"><xsl:value-of select="XMLRPC/MAP/create_date" /></xsl:attribute>
+								<xsl:attribute name="rdn"><xsl:value-of select="$rdnlin" /></xsl:attribute>
+								<xsl:attribute name="cantidad"><xsl:value-of select="XMLRPC/MAP/product_uom_qty" /></xsl:attribute>
+								<xsl:attribute name="clave_producto">{$clave_producto}</xsl:attribute>
+								<xsl:attribute name="reservado">true</xsl:attribute>	
+															
+								<xsl:element name="{$tipoproducto}">									
+									<xsl:attribute name="action">createINE</xsl:attribute>						
+									<xsl:attribute name="property">producto</xsl:attribute>														
+									<xsl:attribute name="rdn">{$prodrdn}</xsl:attribute>							
+								</xsl:element>					
+						
+								<MI_EMPRESA property="mi_empresa" action="set">			
+									<xsl:attribute name="rdn"><xsl:value-of select="$miempresa" /></xsl:attribute>
+								</MI_EMPRESA>	
+								<PEDIDO_TRASPASO_ALMACENES action="set" property="línea">
+									<xsl:attribute name="rdn">{$docrdn}</xsl:attribute>
+								</PEDIDO_TRASPASO_ALMACENES>				
+							</LÍNEA_MATERIA>
+
+							<xsl:call-template name="stock">
+								<xsl:with-param name="central">							
+									<xsl:value-of select="$deleg_central" />
+								</xsl:with-param>
+								<xsl:with-param name="signoreserva" select = "'1'" />
+								<xsl:with-param name="cantidad">
+									<xsl:value-of select="XMLRPC/MAP/product_uom_qty" />
+								</xsl:with-param>
+								<xsl:with-param name="product_reference">{$prodrdn}</xsl:with-param>								
+							</xsl:call-template>
+							<xsl:call-template name="stock">
+								<xsl:with-param name="central">							
+									<xsl:value-of select="$deleg_central" />
+								</xsl:with-param>
+								<xsl:with-param name="signoreserva" select = "'1'" />
+								<xsl:with-param name="cantidad">
+									<xsl:value-of select="XMLRPC/MAP/product_uom_qty" />
+								</xsl:with-param>
+								<xsl:with-param name="product_reference">{$prodrdn}</xsl:with-param>								
+							</xsl:call-template>							
+						</whenc>						
+						<whenc test="new"><!--uso linea articulos aunque sea traspaso-->
 							<REPLICA_IDS action="createINE" destination="0">																	
 								<xsl:attribute name="clases">LÍNEA_ARTÍCULOS_MATERIA</xsl:attribute>							
 								<xsl:attribute name="identificador_replicas"><xsl:value-of select="XMLRPC/MAP/id" /></xsl:attribute>
@@ -535,8 +561,9 @@
 			<!--ojo de la web si viene info fictitica de talla y color y aqui se construye stock y SKU-->
 			<xsl:attribute name="action">createINE</xsl:attribute>
 			<xsl:attribute name="destination"><xsl:value-of select="$central"/></xsl:attribute>	
+			<xsl:attribute name="fecha_modificación"><xsl:value-of select="current-date()" /></xsl:attribute>
 			
-			<xsl:attribute name="cantidad" select="concat('+',$cantidad)"/>
+			<xsl:attribute name="cantidad" select="+0"/>
 														
 			<xsl:attribute name="stock_reservado" select="concat('+',number($signoreserva)*$cantidad)"/>
 			<xsl:attribute name="stock_disponible" select="concat('+',-number($signoreserva)*$cantidad)"/>
